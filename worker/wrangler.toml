@@ -1,0 +1,19 @@
+name = "nrk-web-proxy"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# Ikke eksponer på *.workers.dev - bruk et eget (sub)domene på din sone, slik at
+# WAF- og rate limiting-regler gjelder før workeren kjører og teller mot kvoten.
+workers_dev = false
+
+# Lokal utvikling (`npm run dev`)
+[vars]
+ALLOWED_ORIGINS = "http://localhost:3000"
+
+# Produksjon (`npm run deploy` = `wrangler deploy --env production`).
+# Domenet ligger bare her, så det ikke arves/flyttes mellom miljøer.
+[env.production]
+routes = [{ pattern = "nrk-dl-api.example.com", custom_domain = true }]
+
+[env.production.vars]
+ALLOWED_ORIGINS = "https://nrk-dl.example.com"

@@ -1,0 +1,12 @@
+{
+  "name": "nrk-web-proxy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy --env production"
+  },
+  "devDependencies": {
+    "wrangler": "^4.160.0"
+  }
+}
