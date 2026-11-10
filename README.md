@@ -19,7 +19,7 @@ nettleser ──(små JSON-kall)──▶ worker/ (Cloudflare Worker) ──▶ 
   - **MKV**: video, lyd og undertekster (`S_TEXT/UTF8`) i én fil (`src/lib/mkv.ts`). For VLC, IINA, Plex, Jellyfin og Infuse.
 - **`worker/`** - liten proxy for `psapi.nrk.no`, som bare godtar CORS fra NRK sine egne domener og localhost. NRK sitt video-CDN og `undertekst.nrk.no` godtar alle origins, så ingen video går gjennom workeren.
 
-Workeren slipper bare gjennom `GET` mot katalog- og manifeststier, krever `Origin` fra en tillatt side og cacher svar (katalog 1 t, manifest 5 min, aldri «ikke tilgjengelig»-svar).
+Workeren slipper bare gjennom `GET` mot katalog- og manifeststier, krever `Origin` fra en tillatt side og cacher svar (1 t, men manifest aldri forbi utløpet av rettighetene og aldri «ikke tilgjengelig»-svar).
 
 ## Utvikling
 

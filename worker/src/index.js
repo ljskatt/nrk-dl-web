@@ -15,7 +15,7 @@ const ROUTES = [
   { re: /^\/tv\/catalog\/series\/[\w-]+\/seasons\/[\w-]+$/i, ttl: 3600 },
   { re: /^\/tv\/catalog\/series\/[\w-]+\/extramaterial$/i, ttl: 3600 },
   { re: /^\/tv\/catalog\/programs\/[a-z0-9]+$/i, ttl: 3600 },
-  { re: /^\/playback\/manifest\/program\/[a-z0-9]+$/i, ttl: 300, manifest: true },
+  { re: /^\/playback\/manifest\/program\/[a-z0-9]+$/i, ttl: 3600, manifest: true },
 ];
 
 // Query-parametre vi tillater (paginering). Resten fjernes, så cachen ikke kan
@@ -87,10 +87,18 @@ export default {
       const body = await up.text();
 
       let cacheable = up.ok;
+      let ttl = route.ttl;
       if (cacheable && route.manifest) {
-        // Ikke cache "ikke tilgjengelig"-svar (geoblokkering, rettigheter o.l.)
+        // Ikke cache "ikke tilgjengelig"-svar (geoblokkering, rettigheter o.l.),
+        // og ikke cache forbi tidspunktet rettighetene går ut.
         try {
-          cacheable = JSON.parse(body).playability === "playable";
+          const m = JSON.parse(body);
+          cacheable = m.playability === "playable";
+          const until = Date.parse(m.availability?.onDemand?.to);
+          if (cacheable && !Number.isNaN(until)) {
+            ttl = Math.min(ttl, Math.floor((until - Date.now()) / 1000));
+            cacheable = ttl > 0;
+          }
         } catch {
           cacheable = false;
         }
@@ -100,7 +108,7 @@ export default {
         status: up.status,
         headers: {
           "Content-Type": up.headers.get("Content-Type") || "application/json; charset=utf-8",
-          "Cache-Control": cacheable ? `public, max-age=${route.ttl}` : "no-store",
+          "Cache-Control": cacheable ? `public, max-age=${ttl}` : "no-store",
         },
       });
       if (cacheable) ctx.waitUntil(cache.put(cacheKey, res.clone()));
