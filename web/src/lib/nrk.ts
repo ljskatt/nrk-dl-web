@@ -62,6 +62,9 @@ export function parseInput(input: string): { kind: "series" | "program" | "auto"
       if (prf) return { kind: "program", id: prf[1].toUpperCase() };
       const i = parts.findIndex((p) => p === "serie" || p === "program");
       if (i >= 0 && parts[i + 1]) return { kind: parts[i] === "serie" ? "series" : "program", id: parts[i + 1] };
+      // Delingslenker: tv.nrk.no/se?s=<slug> videresender til /serie/<slug>
+      const slug = parts[0] === "se" ? u.searchParams.get("s")?.trim() : undefined;
+      if (slug && /^[\w-]+$/.test(slug)) return { kind: "auto", id: slug.toLowerCase() };
     }
   } catch {
     /* ikke en URL */
